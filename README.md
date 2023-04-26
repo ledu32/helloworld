@@ -1,3 +1,0 @@
-# helloworld
-# helloworlddevops
-# helloworlddevops
