@@ -32,4 +32,4 @@ jobs:
       run: |
         cd chart
         helm package .
-        helm push helloworldv2-*.tgz oci://ghcr.io/ledu0032/helm-chats
+        helm push helloworldv2-*.tgz oci://ghcr.io/ledu32/helm-chats
