@@ -1,0 +1,44 @@
+name: Docker image tester
+
+on: 
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ] 
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Login to GitHub Container Registry
+      uses: docker/login-action@v2
+      with:
+        registry: ghcr.io
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Kind Cluster
+      uses: helm/kind-action@v1.5.0
+
+    - name: Build Docker image
+      run: docker build -f Dockerfile -t ledu32/helloworld .
+
+    - name: Load image to Kind cluster
+      run: kind load docker-image ledu32/helloworld --name chart-testing
+
+    - name: Setup kustomize
+      shell: bash
+      run: |
+        curl --silent --location --remote-name "https://github.com/kubernetes-sigs/kustomize/releases/download/kustomize%2Fv4.5.7/kustomize_v4.5.7_linux_amd64.tar.gz"
+        tar xvzf kustomize_v4.5.7_linux_amd64.tar.gz 
+        sudo mv kustomize /usr/local/bin/kustomize
+        rm -rfv *.tar.gz
+        kustomize version
+
+    - name: Test Kustomization
+      run: kustomize build base | kubectl apply -f base/kind-deployment.yaml
+
+    - name: Wait for pod to be Ready
+      run: kubectl wait --for=condition=Ready pod -l app=kind-deployment
