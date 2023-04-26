@@ -1,0 +1,27 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kind-deployment
+  labels:
+    app: kind-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: kind-deployment
+  template:
+    metadata:
+      labels:
+        app: kind-deployment
+    spec:
+      containers:
+      - name: helloworldv2
+        image: ledu32/helloworldv2:test1
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 5000
+          initialDelaySeconds: 2
+          periodSeconds: 10
+        ports:
+        - containerPort: 5000
